@@ -16,13 +16,13 @@ DATE_RANGE_DAYS = (DATE_END - DATE_START).days
 SOURCES = ["paid_search", "organic", "referral", "outbound", "event"]
 SOURCE_WEIGHTS = [0.30, 0.25, 0.20, 0.15, 0.10]
 
-# Referral and event convert at 2x the rate of paid_search
+# Referral and event convert at ~4x the rate of paid_search
 SOURCE_CONVERSION_RATES = {
-    "paid_search": 0.12,
-    "organic":     0.16,
-    "referral":    0.24,
-    "outbound":    0.14,
-    "event":       0.24,
+    "paid_search": 0.08,
+    "organic":     0.14,
+    "referral":    0.35,
+    "outbound":    0.10,
+    "event":       0.35,
 }
 
 COMPANY_SIZES = ["1-10", "11-50", "51-200", "201-1000"]
@@ -30,10 +30,10 @@ COMPANY_SIZE_WEIGHTS = [0.20, 0.30, 0.30, 0.20]
 
 # 51-200 converts at the highest rate
 COMPANY_SIZE_MULTIPLIERS = {
-    "1-10":     0.6,
-    "11-50":    0.9,
-    "51-200":   1.4,
-    "201-1000": 1.1,
+    "1-10":     0.4,
+    "11-50":    0.8,
+    "51-200":   1.9,
+    "201-1000": 1.2,
 }
 
 INDUSTRIES = [
@@ -42,24 +42,41 @@ INDUSTRIES = [
 ]
 INDUSTRY_WEIGHTS = [0.20, 0.25, 0.15, 0.10, 0.10, 0.10, 0.10]
 
-# Conversion rate reduced 40% in months 3 and 8 (seasonal slowdown)
-SLOW_MONTH_MULTIPLIER = 0.60
-SLOW_MONTHS = {3, 8}
+# Industry conversion multipliers — pharma/biotech convert best, universities worst
+INDUSTRY_MULTIPLIERS = {
+    "pharma":               1.3,
+    "biotech":              1.2,
+    "medical_devices":      1.0,
+    "diagnostics":          0.9,
+    "hospital_system":      0.8,
+    "cro":                  0.7,
+    "research_university":  0.5,
+}
+
+# Seasonal multipliers — slow months (Q1 freeze, summer), peak months (year-end budget flush)
+SLOW_MONTHS  = {3: 0.5, 8: 0.5}
+PEAK_MONTHS  = {10: 1.4, 11: 1.4}
 
 # Days after lead creation before conversion is recorded (nurturing period)
 NURTURE_DAYS_MIN = 7
 NURTURE_DAYS_MAX = 60
 
 
-def conversion_probability(source: str, company_size: str, month: int) -> float:
+def conversion_probability(source: str, company_size: str, industry: str, month: int) -> float:
     base = SOURCE_CONVERSION_RATES[source]
-    p = base * COMPANY_SIZE_MULTIPLIERS[company_size]
+    p = base * COMPANY_SIZE_MULTIPLIERS[company_size] * INDUSTRY_MULTIPLIERS[industry]
     if month in SLOW_MONTHS:
-        p *= SLOW_MONTH_MULTIPLIER
-    return min(p, 1.0)
+        p *= SLOW_MONTHS[month]
+    elif month in PEAK_MONTHS:
+        p *= PEAK_MONTHS[month]
+    return min(p, 0.95)
 
 
 def generate_leads() -> pd.DataFrame:
+    # Reset seed at the start of each call for reproducibility
+    Faker.seed(SEED)
+    rng = np.random.default_rng(SEED)
+
     # Sample lead attributes
     sources = rng.choice(SOURCES, size=N_LEADS, p=SOURCE_WEIGHTS)
     company_sizes = rng.choice(COMPANY_SIZES, size=N_LEADS, p=COMPANY_SIZE_WEIGHTS)
@@ -76,7 +93,7 @@ def generate_leads() -> pd.DataFrame:
         company_size = company_sizes[i]
         industry = industries[i]
 
-        p = conversion_probability(source, company_size, created_at.month)
+        p = conversion_probability(source, company_size, industry, created_at.month)
         converted = bool(rng.random() < p)
 
         converted_at = None

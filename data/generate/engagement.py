@@ -59,8 +59,8 @@ def generate_events_for_deal(deal: pd.Series) -> list[dict]:
     else:
         end_date = deal["last_contact_date"]
 
-    if pd.isna(end_date) or end_date <= created_at:
-        end_date = created_at + timedelta(days=1)
+    if pd.isna(end_date) or end_date < created_at:
+        end_date = created_at
 
     lo, hi = EVENT_COUNTS[outcome]
     n_events = int(rng.integers(lo, hi + 1))

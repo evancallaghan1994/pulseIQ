@@ -1,6 +1,8 @@
 # Project plan and internal summaries (internal use only)
 PLAN.md
 phase_summaries/
+project_deep_dive.md
+interview_prep/
 
 # Environment
 .env
