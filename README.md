@@ -8,7 +8,7 @@ PulseIQ is a portfolio project demonstrating a production-quality B2B SaaS AI sa
 
 ## Live Demo
 
-*URL added after deployment.*
+**[http://64.23.140.104](http://64.23.140.104)**
 
 ---
 
