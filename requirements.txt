@@ -1,0 +1,27 @@
+# Core
+python-dotenv>=1.0
+pandas>=2.1
+numpy>=1.26
+faker>=24.0
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+
+# ML
+xgboost>=2.0
+scikit-learn>=1.4
+mlflow>=2.11
+
+# AI / RAG
+anthropic>=0.25
+chromadb>=0.5
+sentence-transformers>=3.0
+
+# Dashboard
+streamlit>=1.32
+plotly>=5.20
+
+# Orchestration
+apache-airflow>=2.9
+
+# Testing
+pytest>=8.0
