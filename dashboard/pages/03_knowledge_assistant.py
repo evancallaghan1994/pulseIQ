@@ -6,17 +6,19 @@ Chat interface backed by the RAG pipeline (ChromaDB + Claude).
 import streamlit as st
 from rag.query import answer_question
 
-st.set_page_config(page_title="Knowledge Assistant · PulseIQ", page_icon="💬", layout="wide")
+st.set_page_config(page_title="Knowledge Assistant · PulseIQ", layout="wide")
 
 with st.sidebar:
-    st.markdown("## 🔬 PulseIQ")
-    st.markdown("*AI Sales Intelligence*")
+    st.markdown("## PulseIQ")
+    st.caption("Sales intelligence for life sciences teams")
     st.divider()
-    st.page_link("app.py",                          label="Home",               icon="🏠")
-    st.page_link("pages/01_lead_scoring.py",        label="Lead Scoring",        icon="🎯")
-    st.page_link("pages/02_deal_risk.py",           label="Deal Risk",           icon="⚠️")
-    st.page_link("pages/03_knowledge_assistant.py", label="Knowledge Assistant", icon="💬")
-    st.page_link("pages/04_insights.py",            label="Insights",            icon="📊")
+    st.page_link("app.py",                          label="Home")
+    st.page_link("pages/01_lead_scoring.py",        label="Lead Scoring")
+    st.page_link("pages/02_deal_risk.py",           label="Deal Risk")
+    st.page_link("pages/03_knowledge_assistant.py", label="Knowledge Assistant")
+    st.page_link("pages/04_insights.py",            label="Insights")
+    st.divider()
+    st.caption("Synthetic demo data")
 
 STARTER_QUESTIONS = [
     "How do we handle pricing objections?",
@@ -24,10 +26,10 @@ STARTER_QUESTIONS = [
     "What are the available pricing tiers?",
 ]
 
-st.title("💬 Knowledge Assistant")
-st.caption("Ask questions about pricing, competitors, and objection handling · Powered by Claude + RAG")
+st.title("Knowledge Assistant")
+st.caption("Answers come only from the internal docs (pricing, objections, competitors, FAQ). If the docs don't cover it, it says so.")
 
-# Initialise chat history
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
