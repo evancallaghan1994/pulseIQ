@@ -11,17 +11,19 @@ from sqlalchemy import text
 from db.connection import get_engine
 from models.lead_scoring.predict import score_leads
 
-st.set_page_config(page_title="Lead Scoring · PulseIQ", page_icon="🎯", layout="wide")
+st.set_page_config(page_title="Lead Scoring · PulseIQ", layout="wide")
 
 with st.sidebar:
-    st.markdown("## 🔬 PulseIQ")
-    st.markdown("*AI Sales Intelligence*")
+    st.markdown("## PulseIQ")
+    st.caption("Sales intelligence for life sciences teams")
     st.divider()
-    st.page_link("app.py",                          label="Home",               icon="🏠")
-    st.page_link("pages/01_lead_scoring.py",        label="Lead Scoring",        icon="🎯")
-    st.page_link("pages/02_deal_risk.py",           label="Deal Risk",           icon="⚠️")
-    st.page_link("pages/03_knowledge_assistant.py", label="Knowledge Assistant", icon="💬")
-    st.page_link("pages/04_insights.py",            label="Insights",            icon="📊")
+    st.page_link("app.py",                          label="Home")
+    st.page_link("pages/01_lead_scoring.py",        label="Lead Scoring")
+    st.page_link("pages/02_deal_risk.py",           label="Deal Risk")
+    st.page_link("pages/03_knowledge_assistant.py", label="Knowledge Assistant")
+    st.page_link("pages/04_insights.py",            label="Insights")
+    st.divider()
+    st.caption("Synthetic demo data")
 
 
 @st.cache_resource
@@ -39,21 +41,21 @@ def load_lead_scores() -> pd.DataFrame:
     return df
 
 
-def score_color(score: float) -> str:
+def priority_label(score: float) -> str:
     if score >= 0.7:
-        return "🟢"
+        return "High"
     elif score >= 0.4:
-        return "🟡"
-    return "🔴"
+        return "Medium"
+    return "Low"
 
 
-st.title("🎯 Lead Scoring")
-st.caption("Conversion probability scored by XGBoost · Refreshes every 5 minutes")
+st.title("Lead Scoring")
+st.caption("Each lead scored by conversion probability (XGBoost). Scored on historical leads, so the Converted column shows how well the ranking matched reality.")
 
 with st.spinner("Loading lead scores..."):
     df = load_lead_scores()
 
-# ── Filters ──────────────────────────────────────────────────────────────────
+# Filters
 with st.expander("Filters", expanded=False):
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -71,21 +73,23 @@ if source_filter   != "All": filtered = filtered[filtered["source"]       == sou
 if industry_filter != "All": filtered = filtered[filtered["industry"]     == industry_filter]
 if size_filter     != "All": filtered = filtered[filtered["company_size"] == size_filter]
 
-# ── Metric cards ─────────────────────────────────────────────────────────────
+# Metric cards
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Total Leads",       len(filtered))
 m2.metric("Conversion Rate",   f"{filtered['converted'].mean():.1%}")
 m3.metric("Avg Score",         f"{filtered['score'].mean():.2f}")
 top_source = filtered.groupby("source")["score"].mean().idxmax()
-m4.metric("Top Source",        top_source)
+m4.metric("Top Source",        top_source.replace("_", " ").capitalize())
 
 st.divider()
 
-# ── Lead table ────────────────────────────────────────────────────────────────
+# Lead table
 st.subheader("Lead Priority Table")
 
 display = filtered[["rank", "lead_id", "source", "industry", "company_size", "score", "converted"]].copy()
-display["priority"] = display["score"].apply(score_color)
+display["priority"] = display["score"].apply(priority_label)
+for col in ["source", "industry"]:
+    display[col] = display[col].str.replace("_", " ").str.capitalize()
 display = display.rename(columns={
     "rank": "Rank", "lead_id": "Lead ID", "source": "Source",
     "industry": "Industry", "company_size": "Company Size",
@@ -97,7 +101,7 @@ st.dataframe(display, use_container_width=True, hide_index=True)
 
 st.divider()
 
-# ── Chart: avg score by source ────────────────────────────────────────────────
+# Chart: avg score by source
 st.subheader("Average Score by Acquisition Source")
 source_avg = (
     filtered.groupby("source")["score"]
@@ -105,6 +109,7 @@ source_avg = (
     .reset_index()
     .sort_values("score", ascending=False)
 )
+source_avg["source"] = source_avg["source"].str.replace("_", " ").str.capitalize()
 fig = px.bar(
     source_avg,
     x="source", y="score",

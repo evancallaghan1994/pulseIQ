@@ -31,7 +31,7 @@ def get_active_deals() -> pd.DataFrame:
             d.value,
             d.created_at,
             d.last_contact_date,
-            CURRENT_DATE - d.last_contact_date             AS days_since_last_contact,
+            (SELECT MAX(last_contact_date) FROM deals) - d.last_contact_date AS days_since_last_contact,
             COUNT(e.event_id)                               AS engagement_count,
             SUM(CASE WHEN e.event_type = 'meeting' THEN 1 ELSE 0 END) AS meeting_count
         FROM deals d
