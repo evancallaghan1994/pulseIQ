@@ -1,6 +1,5 @@
 """
-PulseIQ — AI Sales Intelligence Platform
-Streamlit app entry point.
+PulseIQ Streamlit app entry point.
 
 Usage (from project root):
     streamlit run dashboard/app.py
@@ -10,42 +9,49 @@ import streamlit as st
 
 st.set_page_config(
     page_title="PulseIQ",
-    page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Sidebar branding
 with st.sidebar:
-    st.markdown("## 🔬 PulseIQ")
-    st.markdown("*AI Sales Intelligence*")
+    st.markdown("## PulseIQ")
+    st.caption("Sales intelligence for life sciences teams")
     st.divider()
-    st.markdown("**Navigation**")
-    st.page_link("pages/01_lead_scoring.py",      label="Lead Scoring",        icon="🎯")
-    st.page_link("pages/02_deal_risk.py",          label="Deal Risk",           icon="⚠️")
-    st.page_link("pages/03_knowledge_assistant.py", label="Knowledge Assistant", icon="💬")
-    st.page_link("pages/04_insights.py",           label="Insights",            icon="📊")
+    st.page_link("pages/01_lead_scoring.py",        label="Lead Scoring")
+    st.page_link("pages/02_deal_risk.py",           label="Deal Risk")
+    st.page_link("pages/03_knowledge_assistant.py", label="Knowledge Assistant")
+    st.page_link("pages/04_insights.py",            label="Insights")
     st.divider()
-    st.caption("Synthetic demo data · For portfolio use only")
+    st.caption("Synthetic demo data")
 
-# Home page content
-st.title("Welcome to PulseIQ")
-st.markdown("#### AI-powered sales intelligence for life sciences teams.")
-st.markdown("")
+st.title("PulseIQ")
+st.markdown(
+    "Small B2B sales teams have more data than they can act on and no analyst to "
+    "make sense of it. PulseIQ turns raw leads, deals and activity into four things "
+    "a rep or manager can use every day."
+)
 
-col1, col2, col3, col4 = st.columns(4)
+cards = [
+    ("Lead Scoring", "pages/01_lead_scoring.py",
+     "Which inbound leads to call first, ranked by an XGBoost model (ROC-AUC 0.75)."),
+    ("Deal Risk", "pages/02_deal_risk.py",
+     "Open deals likely to close lost, based on engagement signals (ROC-AUC 0.94)."),
+    ("Knowledge Assistant", "pages/03_knowledge_assistant.py",
+     "Answers from internal sales docs with sources, and says so when the docs don't cover it."),
+    ("Daily Insights", "pages/04_insights.py",
+     "Three prioritized insights written by Claude from a nightly metrics snapshot."),
+]
 
-with col1:
-    st.info("**🎯 Lead Scoring**\n\nPrioritise leads by conversion probability using XGBoost.")
+for col, (name, page, description) in zip(st.columns(4), cards):
+    with col:
+        with st.container(border=True):
+            st.markdown(f"**{name}**")
+            st.caption(description)
+            st.page_link(page, label="Open")
 
-with col2:
-    st.warning("**⚠️ Deal Risk**\n\nFlag at-risk deals before they go dark using engagement signals.")
-
-with col3:
-    st.success("**💬 Knowledge Assistant**\n\nAnswer sales rep questions using your internal knowledge base.")
-
-with col4:
-    st.info("**📊 Insights**\n\nAutonomous daily AI insights powered by Claude.")
-
-st.markdown("---")
-st.markdown("Select a page from the sidebar to get started.")
+st.divider()
+st.caption(
+    "Built by Evan Callaghan as a portfolio project. All data is synthetic "
+    "(Faker + NumPy, seed 42). Stack: PostgreSQL, XGBoost + MLflow, ChromaDB, "
+    "Claude API, Airflow, Streamlit, on one VM."
+)
